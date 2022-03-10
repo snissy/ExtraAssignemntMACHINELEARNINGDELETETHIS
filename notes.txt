@@ -1,0 +1,26 @@
+
+zscore 4, this was with mean normalization.
+
+nCV: 15		Mean score: 0.6142	Std: 0.0602		Classifier: StackingClassifier
+nCV: 15		Mean score: 0.4947	Std: 0.0686		Classifier: KNeighborsClassifier
+nCV: 15		Mean score: 0.4956	Std: 0.0414		Classifier: SVC
+nCV: 15		Mean score: 0.3428	Std: 0.0099		Classifier: SVC
+nCV: 15		Mean score: 0.4734	Std: 0.0498		Classifier: DecisionTreeClassifier
+nCV: 15		Mean score: 0.611	Std: 0.0431		Classifier: RandomForestClassifier
+nCV: 15		Mean score: 0.5971	Std: 0.049		Classifier: MLPClassifier
+nCV: 15		Mean score: 0.3428	Std: 0.0103		Classifier: AdaBoostClassifier
+nCV: 15		Mean score: 0.2914	Std: 0.005		Classifier: GaussianNB
+nCV: 15		Mean score: 0.3992	Std: 0.0533		Classifier: QuadraticDiscriminantAnalysis
+
+
+zscore 3, this was max min normalization
+nCV: 15		Mean score: 0.6071	Std: 0.0576		Classifier: StackingClassifier
+nCV: 15		Mean score: 0.4905	Std: 0.0455		Classifier: KNeighborsClassifier
+nCV: 15		Mean score: 0.3418	Std: 0.0105		Classifier: SVC
+nCV: 15		Mean score: 0.5718	Std: 0.0476		Classifier: SVC
+nCV: 15		Mean score: 0.4854	Std: 0.0546		Classifier: DecisionTreeClassifier
+nCV: 15		Mean score: 0.6041	Std: 0.0409		Classifier: RandomForestClassifier
+nCV: 15		Mean score: 0.5387	Std: 0.0335		Classifier: MLPClassifier
+nCV: 15		Mean score: 0.3428	Std: 0.0103		Classifier: AdaBoostClassifier
+nCV: 15		Mean score: 0.2914	Std: 0.005		Classifier: GaussianNB
+nCV: 15		Mean score: 0.3769	Std: 0.0476		Classifier: QuadraticDiscriminantAnalysis
