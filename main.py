@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, StackingClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, StackingClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
@@ -20,6 +20,8 @@ from sklearn.preprocessing import StandardScaler
 # evaluationPath = "data/EvaluateOnMe_RE.csv"
 trainingPath = "data/TrainOnMe-2.csv"
 evaluationPath = "data/EvaluateOnMe-2.csv"
+# trainingPath = "data/eval3.csv"
+# evaluationPath = "data/train3.csv"
 
 config = {"outliersZValue": 3, "corrDropLimit": 0.95}
 
@@ -93,18 +95,42 @@ def removeNoise(trainingData, evaluationData):
     # evaluationData.replace(["False", 'True'], [0, 1], inplace=True)
     # trainingData.replace(["False", 'True'], [0, 1], inplace=True)
     # outliers
-    trainingData = trainingData[(np.abs(stats.zscore(trainingData.drop('y', axis=1))) < 5).all(axis=1)]
+
+    trainingData = trainingData[(np.abs(stats.zscore(trainingData.drop('y', axis=1))) < 4).all(axis=1)]
+    # TODO CHECK 3 or 4
 
     # Here we do correlation values. We should plot it first in order go get som insights.  to data
 
     corrMatrix = trainingData.corr().abs()
     upper = corrMatrix.where(np.triu(np.ones(corrMatrix.shape), k=1).astype(bool))
 
-    dropLimit = 0.95
+    dropLimit = 0.9
     to_drop = [column for column in upper.columns if any(upper[column] >= dropLimit)]
     # Drop features
     trainingData.drop(to_drop, axis=1, inplace=True)
     evaluationData.drop(to_drop, axis=1, inplace=True)
+
+    for cName in evaluationData.columns:
+        if evaluationData[cName].dtype.name != 'bool':
+            dataMean = evaluationData[cName].mean()
+            dataStd = evaluationData[cName].std()
+            evaluationData[cName] = (evaluationData[cName] - dataMean) / dataStd
+            trainingData[cName] = (trainingData[cName] - dataMean) / dataStd
+
+    X_train = trainingData.drop('y', 1)
+    Y_train = trainingData['y']
+
+    pca = PCA()
+    pca.fit(evaluationData)
+    newNumber = len(evaluationData.columns) - sum(
+        1 for cV in pca.explained_variance_ratio_ if cV <= (1 / float(len(evaluationData.columns))) * 0.65)
+    print((1 / float(len(evaluationData.columns))) * 0.65)
+    # 0.05 was really good
+
+    pca = PCA(n_components=newNumber)
+    # # These will become Numpy arrays
+    X_train = pca.fit_transform(X_train)
+    evaluationData = pca.fit_transform(evaluationData)
 
     # hm = sns.heatmap(corrMatrix, annot=True)
     # hm.set(title="Correlation matrix of IRIS data\n")
@@ -116,13 +142,6 @@ def removeNoise(trainingData, evaluationData):
     #pca.fit(X)
     #print(pca.explained_variance_ratio_)
     # TODO use sklearn SCALE FUNCTION, StandardScaler
-    for cName in evaluationData.columns:
-        if evaluationData[cName].dtype.name != 'bool':
-            dataMean = evaluationData[cName].mean()
-            dataStd = evaluationData[cName].std()
-            evaluationData[cName] = (evaluationData[cName] - dataMean) / dataStd
-            trainingData[cName] = (trainingData[cName] - dataMean) / dataStd
-
 
 
     # for cName in evaluationData.columns:
@@ -132,7 +151,7 @@ def removeNoise(trainingData, evaluationData):
     #         evaluationData[cName] = (evaluationData[cName] - dataMin) / (dataMax - dataMin)
     #         trainingData[cName] = (trainingData[cName] - dataMin) / (dataMax - dataMin)
 
-    return trainingData, evaluationData
+    return X_train, Y_train, evaluationData
 
 
 def splitData(data, splitvalue=0.75):
@@ -146,8 +165,7 @@ def splitData(data, splitvalue=0.75):
 
 if __name__ == '__main__':
 
-    trainData, evalData = removeNoise(readData(trainingPath), readData(evaluationPath))
-    trainPoint, trainTargets = trainData.drop('y', axis=1), trainData['y']
+    X_train, Y_train, X_eval = removeNoise(readData(trainingPath), readData(evaluationPath))
 
     # le = preprocessing.LabelEncoder()
     # le.fit(trainTargets)
@@ -155,13 +173,14 @@ if __name__ == '__main__':
 
     # Now we can start classify the data
 
-    print(len(trainPoint))
+    print("Number of points to train on is: {}".format(len(X_train)))
 
     classifiers = [
         KNeighborsClassifier(15),
         SVC(kernel="linear", C=0.025),
         SVC(),
-        #GaussianProcessClassifier(1.0 * RBF(1.0)),
+        # GaussianProcessClassifier(1.0 * RBF(1.0)),
+        GradientBoostingClassifier(),
         DecisionTreeClassifier(),
         RandomForestClassifier(),
         MLPClassifier(alpha=0.6, max_iter=1000),
@@ -176,19 +195,22 @@ if __name__ == '__main__':
 
     sumCache = []
 
-    #print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n,round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
+    # print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n,round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
 
-    n = 5
-    estimators = [('rf', RandomForestClassifier()), ('mlp', MLPClassifier(alpha=0.6, max_iter=1000)), ('15nn', KNeighborsClassifier(15))]
-
-    clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(),  cv=10)
-    result = cross_val_score(clf, trainPoint, trainTargets, cv=n)
-    print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n, round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
+    n = 3
 
     for clf in classifiers:
-        result = cross_val_score(clf, trainPoint, trainTargets, cv=n)
-        print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n,round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
+        result = cross_val_score(clf, X_train, Y_train, cv=n)
+        print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n, round(np.mean(result), 4),
+                                                                                  round(np.std(result), 4),
+                                                                                  clf.__class__.__name__, ))
 
+    estimators = [('svc', SVC()),
+                  ('mlp', MLPClassifier(alpha=0.6, max_iter=1000)),
+                  ('qda', QuadraticDiscriminantAnalysis())]
 
-
-
+    clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(), cv=10)
+    result = cross_val_score(clf, X_train, Y_train, cv=n)
+    print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n, round(np.mean(result), 4),
+                                                                              round(np.std(result), 4),
+                                                                              clf.__class__.__name__, ))
