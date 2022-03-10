@@ -96,7 +96,7 @@ def removeNoise(trainingData, evaluationData):
     # trainingData.replace(["False", 'True'], [0, 1], inplace=True)
     # outliers
 
-    trainingData = trainingData[(np.abs(stats.zscore(trainingData.drop('y', axis=1))) < 4).all(axis=1)]
+    trainingData = trainingData[(np.abs(stats.zscore(trainingData.drop('y', axis=1))) < 5).all(axis=1)]
     # TODO CHECK 3 or 4
 
     # Here we do correlation values. We should plot it first in order go get som insights.  to data
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n,round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
 
-    n = 3
+    n = 10
 
     for clf in classifiers:
         result = cross_val_score(clf, X_train, Y_train, cv=n)
