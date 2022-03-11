@@ -1,12 +1,14 @@
+import time
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 from sklearn.decomposition import PCA
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis, LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, StackingClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedShuffleSplit
 from sklearn.model_selection import cross_val_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -138,11 +140,10 @@ def removeNoise(trainingData, evaluationData):
     # Mean normalize data.
     # mean normalization
 
-    #pca = PCA(n_components=X.shape[1])
-    #pca.fit(X)
-    #print(pca.explained_variance_ratio_)
+    # pca = PCA(n_components=X.shape[1])
+    # pca.fit(X)
+    # print(pca.explained_variance_ratio_)
     # TODO use sklearn SCALE FUNCTION, StandardScaler
-
 
     # for cName in evaluationData.columns:
     #     if evaluationData[cName].dtype.name != 'bool':
@@ -174,43 +175,94 @@ if __name__ == '__main__':
     # Now we can start classify the data
 
     print("Number of points to train on is: {}".format(len(X_train)))
-
+    # The best parameters are {'C': 4.259662151757895, 'gamma': 0.0383646083799769} with a score of 0.62060
     classifiers = [
         KNeighborsClassifier(15),
         SVC(kernel="linear", C=0.025),
-        SVC(),
+        SVC(kernel="rbf", C=4.259662151757895, gamma=0.0383646083799769),
         # GaussianProcessClassifier(1.0 * RBF(1.0)),
-        GradientBoostingClassifier(),
+        GradientBoostingClassifier(),  # SLOW
         DecisionTreeClassifier(),
-        RandomForestClassifier(),
-        MLPClassifier(alpha=0.6, max_iter=1000),
+        RandomForestClassifier(criterion='entropy', n_estimators=250, max_features='sqrt'),
+        MLPClassifier(alpha=1.4446930579460697, max_iter=1000),
+        AdaBoostClassifier(),
         AdaBoostClassifier(GaussianNB()),
         GaussianNB(),
         QuadraticDiscriminantAnalysis(),
+        LinearDiscriminantAnalysis()
     ]
+
 
     # trainData, validationData = splitData(trainData)
 
     # sparse coordinate arrays
 
-    sumCache = []
+    def gridSearch():
 
-    # print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n,round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
+        def svc():
+            startTime = time.time()
+            sC = 0
+            dC = 5
+            sG = 0.00001
+            dG = 2.5
+            C_range = np.linspace(sC, sC + dC, 150)
+            gamma_range = np.linspace(sG, sG + dG, 150)
+            param_grid = dict(gamma=gamma_range, C=C_range)
+            cv = StratifiedShuffleSplit(n_splits=10, test_size=0.2, random_state=42)
+            grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv)
+            grid.fit(X_train, Y_train)
 
-    n = 10
+            print(
+                "The best parameters are %s with a score of %0.5f"
+                % (grid.best_params_, grid.best_score_)
+            )
 
-    for clf in classifiers:
+            print("Tiden var {}".format(time.time() - startTime))
+
+        def mlp():
+            startTime = time.time()
+
+            aStart = 1.4446930579460697
+            aD = abs(1.6428571428571426 - 1.4446930579460697)*1.1
+            a_range = np.linspace(aStart-aD, aStart+aD, 250)
+            param_grid = dict(alpha=a_range)
+            cv = StratifiedShuffleSplit(n_splits=10, test_size=0.2, random_state=42)
+            grid = GridSearchCV(MLPClassifier(), param_grid=param_grid, cv=cv)
+            grid.fit(X_train, Y_train)
+
+            print(
+                "The best parameters are %s with a score of %0.5f"
+                % (grid.best_params_, grid.best_score_)
+            )
+
+            print("Tiden var {}".format(time.time() - startTime))
+
+        mlp()
+
+
+    def testFunction():
+
+        sumCache = []
+
+        # print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n,round(np.mean(result), 4), round(np.std(result), 4), clf.__class__.__name__, ))
+
+        n = 10
+
+        for clf in classifiers:
+            result = cross_val_score(clf, X_train, Y_train, cv=n)
+            print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n, round(np.mean(result), 4),
+                                                                                      round(np.std(result), 4),
+                                                                                      clf.__class__.__name__, ))
+
+        estimators = [('svc', SVC()),
+                      ('mlp', MLPClassifier(alpha=0.6, max_iter=1000)),
+                      ('qda', QuadraticDiscriminantAnalysis())]
+
+        clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(), cv=10)
         result = cross_val_score(clf, X_train, Y_train, cv=n)
         print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n, round(np.mean(result), 4),
                                                                                   round(np.std(result), 4),
                                                                                   clf.__class__.__name__, ))
 
-    estimators = [('svc', SVC()),
-                  ('mlp', MLPClassifier(alpha=0.6, max_iter=1000)),
-                  ('qda', QuadraticDiscriminantAnalysis())]
-
-    clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(), cv=10)
-    result = cross_val_score(clf, X_train, Y_train, cv=n)
-    print("nCV: {}\t\tMean score: {}\tStd: {}\t\tClassifier: {}\t\t\t".format(n, round(np.mean(result), 4),
-                                                                              round(np.std(result), 4),
-                                                                              clf.__class__.__name__, ))
+    #gridSearch()
+    testFunction()
