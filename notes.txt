@@ -1,26 +1,41 @@
+previousData
+Eval
+10000
+Train
+999
 
-zscore 4, this was with mean normalization.
+myData
 
-nCV: 15		Mean score: 0.6142	Std: 0.0602		Classifier: StackingClassifier
-nCV: 15		Mean score: 0.4947	Std: 0.0686		Classifier: KNeighborsClassifier
-nCV: 15		Mean score: 0.4956	Std: 0.0414		Classifier: SVC
-nCV: 15		Mean score: 0.3428	Std: 0.0099		Classifier: SVC
-nCV: 15		Mean score: 0.4734	Std: 0.0498		Classifier: DecisionTreeClassifier
-nCV: 15		Mean score: 0.611	Std: 0.0431		Classifier: RandomForestClassifier
-nCV: 15		Mean score: 0.5971	Std: 0.049		Classifier: MLPClassifier
-nCV: 15		Mean score: 0.3428	Std: 0.0103		Classifier: AdaBoostClassifier
-nCV: 15		Mean score: 0.2914	Std: 0.005		Classifier: GaussianNB
-nCV: 15		Mean score: 0.3992	Std: 0.0533		Classifier: QuadraticDiscriminantAnalysis
+Eval
+195555
 
+Train
+782220 * f = 10 000
 
-zscore 3, this was max min normalization
-nCV: 15		Mean score: 0.6071	Std: 0.0576		Classifier: StackingClassifier
-nCV: 15		Mean score: 0.4905	Std: 0.0455		Classifier: KNeighborsClassifier
-nCV: 15		Mean score: 0.3418	Std: 0.0105		Classifier: SVC
-nCV: 15		Mean score: 0.5718	Std: 0.0476		Classifier: SVC
-nCV: 15		Mean score: 0.4854	Std: 0.0546		Classifier: DecisionTreeClassifier
-nCV: 15		Mean score: 0.6041	Std: 0.0409		Classifier: RandomForestClassifier
-nCV: 15		Mean score: 0.5387	Std: 0.0335		Classifier: MLPClassifier
-nCV: 15		Mean score: 0.3428	Std: 0.0103		Classifier: AdaBoostClassifier
-nCV: 15		Mean score: 0.2914	Std: 0.005		Classifier: GaussianNB
-nCV: 15		Mean score: 0.3769	Std: 0.0476		Classifier: QuadraticDiscriminantAnalysis
+super important
+
+[('knn', KNeighborsClassifier(n_neighbors=20)), ('Lsvc', SVC(C=1, kernel='linear')), ('mlp', MLPClassifier(alpha=0.1778439837548613, max_iter=1000)), ('naiveGauss', GaussianNB())]
+[(0.5460472123471777, 'AdaBoostClassifier' ,1),
+(0.5471101559500068, 'AdaBoostClassifier',2),
+(0.5612228031982758, 'StackingClassifier',3),
+(0.5651093600971125, 'StackingClassifier',4),
+(0.5699282184043305, 'StackingClassifier',5),
+(0.5782858350571651, 'MLPClassifier', 6),
+(0.5749971355489218, 'MLPClassifier',7),
+(0.582404838290124, 'StackingClassifier',8),
+(0.5846379488672258, 'StackingClassifier',9),
+(0.588162578501443, 'MLPClassifier',10),
+(0.5866318390704934, 'StackingClassifier',11),
+(0.588171287981073, 'MLPClassifier',12),
+(0.5806391364531592, 'MLPClassifier',13),
+(0.5815772441812934, 'StackingClassifier',14),
+(0.5844016316532682, 'LinearDiscriminantAnalysis',15),
+(0.5864011346322974, 'StackingClassifier',16),
+(0.5762834289182595, 'MLPClassifier',17),
+(0.5896919631244503, 'StackingClassifier',18),
+(0.5817001446160708, 'StackingClassifier',19),
+(0.5872190515415392, 'MLPClassifier', 20),
+(0.5858086964734737, 'SVC', 21),
+(0.5846362069712999, 'MLPClassifier', 22),
+(0.5756973777111642, 'SVC', 23),
+(0.5864013281762891, 'StackingClassifier', 24),]

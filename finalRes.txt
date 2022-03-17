@@ -1,0 +1,1 @@
+(0.5810407735468415, [('knn', KNeighborsClassifier(n_neighbors=20)), ('Lsvc', SVC(C=1, kernel='linear')), ('mlp', MLPClassifier(alpha=0.1778439837548613, max_iter=1000)), ('ada', AdaBoostClassifier())])
